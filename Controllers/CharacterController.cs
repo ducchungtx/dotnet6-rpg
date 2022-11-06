@@ -13,7 +13,7 @@ namespace first_api.Controllers
         private static List<Character> characters = new List<Character>
         {
             new Character(),
-            new Character { Name = "Truc Linh", Class = RpgClass.Cleric },
+            new Character { Name = "Test person", Class = RpgClass.Cleric },
         };
 
         [HttpGet]
