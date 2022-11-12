@@ -11,16 +11,6 @@ namespace first_api.Services.CharacterService
 {
     public class CharacterService : ICharacterService
     {
-        private static List<Character> characters = new List<Character>
-        {
-            new Character(),
-            new Character
-            {
-                Id = 1,
-                Name = "Test person",
-                Class = RpgClass.Cleric
-            },
-        };
         private readonly IMapper _mapper;
         private readonly DataContext _context;
 
@@ -50,9 +40,12 @@ namespace first_api.Services.CharacterService
                 new ServiceReponse<List<GetCharacterDto>>();
             try
             {
-                Character character = characters.First(c => c.Id == id);
-                characters.Remove(character);
-                reponse.Data = characters.Select(c => _mapper.Map<GetCharacterDto>(c)).ToList();
+                Character character = await _context.Characters.FirstAsync(c => c.Id == id);
+                _context.Characters.Remove(character);
+                await _context.SaveChangesAsync();
+                reponse.Data = _context.Characters
+                    .Select(c => _mapper.Map<GetCharacterDto>(c))
+                    .ToList();
             }
             catch (Exception ex)
             {
