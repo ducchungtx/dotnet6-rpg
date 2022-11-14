@@ -17,9 +17,29 @@ namespace first_api.Data
             _configuration = configuration;
         }
 
-        public Task<ServiceReponse<string>> Login(string username, string password)
+        public async Task<ServiceReponse<string>> Login(string username, string password)
         {
-            throw new NotImplementedException();
+            var reponse = new ServiceReponse<string>();
+            var user = await _context.Users.FirstOrDefaultAsync(
+                u => u.Username.ToLower().Equals(username.ToLower())
+            );
+
+            if (user == null)
+            {
+                reponse.Success = false;
+                reponse.Message = "User not found.";
+            }
+            else if (!VerifyPasswordHash(password, user.PasswordHash, user.PasswordSalt))
+            {
+                reponse.Success = false;
+                reponse.Message = "Wrong password.";
+            }
+            else
+            {
+                reponse.Data = user.Id.ToString();
+            }
+
+            return reponse;
         }
 
         public async Task<ServiceReponse<int>> Register(User user, string password)
@@ -59,6 +79,15 @@ namespace first_api.Data
             {
                 passwordSalt = hmac.Key;
                 passwordHash = hmac.ComputeHash(System.Text.Encoding.UTF8.GetBytes(password));
+            }
+        }
+
+        private bool VerifyPasswordHash(string password, byte[] passwordHash, byte[] passwordSalt)
+        {
+            using (var hmac = new System.Security.Cryptography.HMACSHA512(passwordSalt))
+            {
+                var computeHash = hmac.ComputeHash(System.Text.Encoding.UTF8.GetBytes(password));
+                return computeHash.SequenceEqual(passwordHash);
             }
         }
     }
