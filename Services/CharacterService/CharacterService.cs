@@ -56,10 +56,12 @@ namespace first_api.Services.CharacterService
             return reponse;
         }
 
-        public async Task<ServiceReponse<List<GetCharacterDto>>> GetAllCharacters()
+        public async Task<ServiceReponse<List<GetCharacterDto>>> GetAllCharacters(int userId)
         {
             var reponse = new ServiceReponse<List<GetCharacterDto>>();
-            var dbCharacters = await _context.Characters.ToListAsync();
+            var dbCharacters = await _context.Characters
+                .Where(c => c.User.Id == userId)
+                .ToListAsync();
             reponse.Data = dbCharacters.Select(c => _mapper.Map<GetCharacterDto>(c)).ToList();
             return reponse;
         }

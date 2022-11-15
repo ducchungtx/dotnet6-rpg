@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using first_api.Dtos.Character;
 using first_api.Services.CharacterService;
@@ -21,11 +22,13 @@ namespace first_api.Controllers
             _characterService = characterService;
         }
 
-        [HttpGet]
-        [Route("GetAll")]
+        [HttpGet("GetAll")]
         public async Task<ActionResult<ServiceReponse<List<GetCharacterDto>>>> Get()
         {
-            return Ok(await _characterService.GetAllCharacters());
+            int userId = int.Parse(
+                User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier).Value
+            );
+            return Ok(await _characterService.GetAllCharacters(userId));
         }
 
         [HttpGet("{id}")]
