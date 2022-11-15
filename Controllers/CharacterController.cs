@@ -4,10 +4,12 @@ using System.Linq;
 using System.Threading.Tasks;
 using first_api.Dtos.Character;
 using first_api.Services.CharacterService;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace first_api.Controllers
 {
+    [Authorize]
     [ApiController]
     [Route("api/[controller]")]
     public class CharacterController : ControllerBase
