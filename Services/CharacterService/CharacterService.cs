@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using AutoMapper;
 using first_api.Data;
@@ -13,12 +14,23 @@ namespace first_api.Services.CharacterService
     {
         private readonly IMapper _mapper;
         private readonly DataContext _context;
+        private readonly IHttpContextAccessor _httpContextAccessor;
 
-        public CharacterService(IMapper mapper, DataContext context)
+        public CharacterService(
+            IMapper mapper,
+            DataContext context,
+            IHttpContextAccessor httpContextAccessor
+        )
         {
             _mapper = mapper;
             _context = context;
+            _httpContextAccessor = httpContextAccessor;
         }
+
+        private int GetUserId() =>
+            int.Parse(
+                _httpContextAccessor.HttpContext.User.FindFirstValue(ClaimTypes.NameIdentifier)
+            );
 
         public async Task<ServiceReponse<List<GetCharacterDto>>> AddCharacter(
             AddCharacterDto newCharacter
@@ -56,11 +68,11 @@ namespace first_api.Services.CharacterService
             return reponse;
         }
 
-        public async Task<ServiceReponse<List<GetCharacterDto>>> GetAllCharacters(int userId)
+        public async Task<ServiceReponse<List<GetCharacterDto>>> GetAllCharacters()
         {
             var reponse = new ServiceReponse<List<GetCharacterDto>>();
             var dbCharacters = await _context.Characters
-                .Where(c => c.User.Id == userId)
+                .Where(c => c.User.Id == GetUserId())
                 .ToListAsync();
             reponse.Data = dbCharacters.Select(c => _mapper.Map<GetCharacterDto>(c)).ToList();
             return reponse;
