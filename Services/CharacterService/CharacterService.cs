@@ -38,9 +38,12 @@ namespace first_api.Services.CharacterService
         {
             var serviceResponse = new ServiceReponse<List<GetCharacterDto>>();
             Character character = _mapper.Map<Character>(newCharacter);
+            character.User = await _context.Users.FirstOrDefaultAsync(u => u.Id == GetUserId());
+
             _context.Characters.Add(character);
             await _context.SaveChangesAsync();
             serviceResponse.Data = _context.Characters
+                .Where(c => c.User.Id == GetUserId())
                 .Select(c => _mapper.Map<GetCharacterDto>(c))
                 .ToList();
             return serviceResponse;
@@ -48,24 +51,35 @@ namespace first_api.Services.CharacterService
 
         public async Task<ServiceReponse<List<GetCharacterDto>>> DeleteCharacter(int id)
         {
-            ServiceReponse<List<GetCharacterDto>> reponse =
+            ServiceReponse<List<GetCharacterDto>> response =
                 new ServiceReponse<List<GetCharacterDto>>();
             try
             {
-                Character character = await _context.Characters.FirstAsync(c => c.Id == id);
-                _context.Characters.Remove(character);
-                await _context.SaveChangesAsync();
-                reponse.Data = _context.Characters
-                    .Select(c => _mapper.Map<GetCharacterDto>(c))
-                    .ToList();
+                Character character = await _context.Characters.FirstOrDefaultAsync(
+                    c => c.Id == id && c.User.Id == GetUserId()
+                );
+                if (character != null)
+                {
+                    _context.Characters.Remove(character);
+                    await _context.SaveChangesAsync();
+                    response.Data = _context.Characters
+                        .Where(c => c.User.Id == GetUserId())
+                        .Select(c => _mapper.Map<GetCharacterDto>(c))
+                        .ToList();
+                }
+                else
+                {
+                    response.Success = false;
+                    response.Message = "Character not found";
+                }
             }
             catch (Exception ex)
             {
-                reponse.Success = false;
-                reponse.Message = ex.Message;
+                response.Success = false;
+                response.Message = ex.Message;
             }
 
-            return reponse;
+            return response;
         }
 
         public async Task<ServiceReponse<List<GetCharacterDto>>> GetAllCharacters()
@@ -81,7 +95,9 @@ namespace first_api.Services.CharacterService
         public async Task<ServiceReponse<GetCharacterDto>> GetCharacterById(int id)
         {
             var serviceResponse = new ServiceReponse<GetCharacterDto>();
-            var dbCharacters = await _context.Characters.FirstOrDefaultAsync(c => c.Id == id);
+            var dbCharacters = await _context.Characters.FirstOrDefaultAsync(
+                c => c.Id == id && c.User.Id == GetUserId()
+            );
             serviceResponse.Data = _mapper.Map<GetCharacterDto>(dbCharacters);
             return serviceResponse;
         }
