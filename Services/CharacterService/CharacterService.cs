@@ -56,14 +56,14 @@ namespace first_api.Services.CharacterService
             try
             {
                 Character character = await _context.Characters.FirstOrDefaultAsync(
-                    c => c.Id == id && c.User.Id == GetUserId()
+                    c => c.Id == id && c.User!.Id == GetUserId()
                 );
                 if (character != null)
                 {
                     _context.Characters.Remove(character);
                     await _context.SaveChangesAsync();
                     response.Data = _context.Characters
-                        .Where(c => c.User.Id == GetUserId())
+                        .Where(c => c.User!.Id == GetUserId())
                         .Select(c => _mapper.Map<GetCharacterDto>(c))
                         .ToList();
                 }
@@ -84,19 +84,19 @@ namespace first_api.Services.CharacterService
 
         public async Task<ServiceReponse<List<GetCharacterDto>>> GetAllCharacters()
         {
-            var reponse = new ServiceReponse<List<GetCharacterDto>>();
+            var serviceReponse = new ServiceReponse<List<GetCharacterDto>>();
             var dbCharacters = await _context.Characters
-                .Where(c => c.User.Id == GetUserId())
+                .Where(c => c.User!.Id == GetUserId())
                 .ToListAsync();
-            reponse.Data = dbCharacters.Select(c => _mapper.Map<GetCharacterDto>(c)).ToList();
-            return reponse;
+            serviceReponse.Data = dbCharacters.Select(c => _mapper.Map<GetCharacterDto>(c)).ToList();
+            return serviceReponse;
         }
 
         public async Task<ServiceReponse<GetCharacterDto>> GetCharacterById(int id)
         {
             var serviceResponse = new ServiceReponse<GetCharacterDto>();
             var dbCharacters = await _context.Characters.FirstOrDefaultAsync(
-                c => c.Id == id && c.User.Id == GetUserId()
+                c => c.Id == id && c.User!.Id == GetUserId()
             );
             serviceResponse.Data = _mapper.Map<GetCharacterDto>(dbCharacters);
             return serviceResponse;
@@ -109,9 +109,15 @@ namespace first_api.Services.CharacterService
             ServiceReponse<GetCharacterDto> reponse = new ServiceReponse<GetCharacterDto>();
             try
             {
-                Character character = await _context.Characters.FirstOrDefaultAsync(
+                Character character = await _context.Characters
+                .Include(c => c.User)
+                .FirstOrDefaultAsync(
                     c => c.Id == updatedCharacter.Id
                 );
+
+                if(character is null || character.User!.Id != GetUserId()) {
+                  throw new Exception($"Character with Id '{updatedCharacter.Id}'");
+                }
 
                 character.Name = updatedCharacter.Name;
                 character.HitPoints = updatedCharacter.HitPoints;
@@ -132,5 +138,5 @@ namespace first_api.Services.CharacterService
 
             return reponse;
         }
-    }
+  }
 }
