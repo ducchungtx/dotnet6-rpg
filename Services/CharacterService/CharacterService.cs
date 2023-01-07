@@ -43,7 +43,7 @@ namespace first_api.Services.CharacterService
             _context.Characters.Add(character);
             await _context.SaveChangesAsync();
             serviceResponse.Data = _context.Characters
-                .Where(c => c.User.Id == GetUserId())
+                .Where(c => c.User!.Id == GetUserId())
                 .Select(c => _mapper.Map<GetCharacterDto>(c))
                 .ToList();
             return serviceResponse;

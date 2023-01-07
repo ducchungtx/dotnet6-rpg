@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
 using first_api.Dtos.Character;
+using first_api.Dtos.Weapon;
 
 namespace first_api
 {
@@ -13,7 +14,8 @@ namespace first_api
         {
             CreateMap<Character, GetCharacterDto>();
             CreateMap<AddCharacterDto, Character>();
-            CreateMap<UpdateCharacterDto, Character>();
+            // CreateMap<UpdateCharacterDto, Character>();
+            CreateMap<Weapon, GetWeaponDto>();
         }
     }
 }
