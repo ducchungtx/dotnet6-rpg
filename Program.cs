@@ -1,12 +1,14 @@
 global using first_api.Models;
-using first_api.Data;
-using first_api.Services.CharacterService;
+global using first_api.Data;
+global using first_api.Services.CharacterService;
+global using first_api.Services.WeaponService;
+global using first_api.Services.FightService;
+
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Swashbuckle.AspNetCore.Filters;
 using Microsoft.OpenApi.Models;
-using first_api.Services.WeaponService;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -55,6 +57,7 @@ builder.Services
 
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<IWeaponService, WeaponService>();
+builder.Services.AddScoped<IFightService, FightService>();
 
 var app = builder.Build();
 
