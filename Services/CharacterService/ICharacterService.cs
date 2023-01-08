@@ -13,5 +13,8 @@ namespace first_api.Services.CharacterService
         Task<ServiceReponse<List<GetCharacterDto>>> AddCharacter(AddCharacterDto newCharacter);
         Task<ServiceReponse<GetCharacterDto>> UpdateCharacter(UpdateCharacterDto updatedCharacter);
         Task<ServiceReponse<List<GetCharacterDto>>> DeleteCharacter(int id);
+        Task<ServiceReponse<GetCharacterDto>> AddCharacterSkill(
+            AddCharacterSkillDto newCharacterSkill
+        );
     }
 }
