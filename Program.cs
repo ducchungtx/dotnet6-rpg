@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Swashbuckle.AspNetCore.Filters;
 using Microsoft.OpenApi.Models;
+using Swashbuckle.AspNetCore.SwaggerGen;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -22,19 +23,18 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
-    c.AddSecurityDefinition(
-        "oauth2",
-        new OpenApiSecurityScheme
-        {
-            Description =
-                "Standard Authorization header using the Bearer scheme, e.g. \"bearer {token} \"",
-            In = ParameterLocation.Header,
-            Name = "Authorization",
-            Type = SecuritySchemeType.ApiKey
-        }
-    );
-    c.OperationFilter<SecurityRequirementsOperationFilter>();
+  c.AddSecurityDefinition("bearer", new OpenApiSecurityScheme
+          {
+              Description = "Put **_ONLY_** your JWT Bearer token on textbox below!",
+              Type = SecuritySchemeType.Http,
+              BearerFormat = "JWT",
+              Name = "JWT Authentication",
+              In = ParameterLocation.Header,
+              Scheme = "bearer"
+          });
+  c.OperationFilter<AddAuthHeaderOperationFilter>();
 });
+
 builder.Services.AddAutoMapper(typeof(Program).Assembly);
 builder.Services.AddScoped<ICharacterService, CharacterService>();
 builder.Services.AddScoped<IAuthRepository, AuthRepository>();
@@ -77,3 +77,17 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
+
+public class AddAuthHeaderOperationFilter : IOperationFilter
+    {
+        public void Apply(OpenApiOperation operation, OperationFilterContext context)
+        {
+            if (operation.Security == null)
+                operation.Security = new List<OpenApiSecurityRequirement>();
+            var scheme = new OpenApiSecurityScheme { Reference = new OpenApiReference { Type = ReferenceType.SecurityScheme, Id = "bearer" } };
+            operation.Security.Add(new OpenApiSecurityRequirement
+            {
+                [scheme] = new List<string>()
+            });
+        }
+    }

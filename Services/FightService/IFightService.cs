@@ -10,5 +10,8 @@ namespace first_api.Services.FightService
     {
         Task<ServiceReponse<AttackResultDto>> WeaponAttack(WeaponAttackDto request);
         Task<ServiceReponse<AttackResultDto>> SkillAttack(SkillAttackDto request);
+        Task<ServiceReponse<FightResultDto>> Fight(FightRequestDto request);
+        Task<ServiceReponse<List<HighScoreDto>>> GetHighScore();
+
     }
 }
